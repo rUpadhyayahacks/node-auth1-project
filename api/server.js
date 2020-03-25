@@ -27,7 +27,7 @@ server.use(express.json());
 server.use(cors());
 server.use(session(sessionConfig))
 
-server.use("/api/users", restricted, usersRouter);
+server.use("/api/users", restricted, checkRole("user"), usersRouter);
 server.use('/api/auth', authRouter)
 
 server.get("/", (req, res) => {
@@ -35,3 +35,17 @@ server.get("/", (req, res) => {
 });
 
 module.exports = server;
+
+function checkRole(role) {
+    return (req, res, next) => {
+      if (
+        req.decodedToken &&
+        req.decodedToken.role &&
+        req.decodedToken.role.toLowerCase() === role
+      ) {
+        next();
+      } else {
+        res.status(403).json({ you: "Shall not pass!" });
+      }
+    };
+  }
